@@ -5,7 +5,7 @@ Created on Sun May 14 11:11:17 2017
 @author: john
 """
 
-from PYGaussMarkov.CombinedSolver import CombinedSolver
+from pygaussmarkov.CombinedSolver import CombinedSolver
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -169,6 +169,9 @@ def main():
     plt.gca().add_artist(cFit)
     for c in otherCirc:
         plt.gca().add_artist(c)
+    
+    figManager = plt.get_current_fig_manager()
+    figManager.window.showMaximized()
     
     return        
 

@@ -4,9 +4,9 @@ module contains the TriangulationSover object wihch can sovle triangulatin probl
 @author: john
 """
 
-from PYGaussMarkov.ParametricSolver import ParametricSolver
+from pygaussmarkov.ParametricSolver import ParametricSolver
 import numpy as np
-import PYGaussMarkov.GaussMarkovUtilities as GMUtils
+import pygaussmarkov.GaussMarkovUtilities as GMUtils
 import numpy.linalg as la
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -116,6 +116,9 @@ def main():
         yStep.append(fitter.history[i][1])
         zStep.append(fitter.history[i][2])
     ax.scatter(xStep,yStep,zStep,c='b', marker='o')
+    
+    figManager = plt.get_current_fig_manager()
+    figManager.window.showMaximized()
 
 if __name__ == '__main__':
     main()

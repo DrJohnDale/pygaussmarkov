@@ -3,10 +3,10 @@
 @author: john
 """
 
-from PYGaussMarkov.ParametricSolver import ParametricSolver
+from pygaussmarkov.ParametricSolver import ParametricSolver
 import numpy as np
 import matplotlib.pyplot as plt
-import PYGaussMarkov.GaussMarkovUtilities as GMUtils
+import pygaussmarkov.GaussMarkovUtilities as GMUtils
 
 class NthOrderFit(ParametricSolver):
     """ Nth Order Fitter """
@@ -29,10 +29,7 @@ class NthOrderFit(ParametricSolver):
         self.uncert = uncertainties
     
     def getListOfParameterNames(self):
-        out = list()
-        for i in range(self.order+1):
-            out.append('P'+str(i))
-        return out
+        return ['P'+str(i) for i in range(self.order+1)]
     
     def getAandAT(self,variables):
         m = np.matrix(np.zeros([len(self.xData),self.getNumberOfFreeParameters()]))
