@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class CircleSolver(CombinedSolver):
-    """ Simple y=mx+c fitting """
+    """ fits a circle with a combined solver """
     def __init__(self, xPos, yPos, xPosUncert, yPosUncert ,deltaChiSqToStop = 0.01,dampingFactor = 1,useDampedGaussNeutonLineSearch = False, recordHistory = False):
         """
         xPos = the x positions, these are measurements
@@ -121,6 +121,9 @@ class CircleSolver(CombinedSolver):
         return m
     
     def determinStatingVariables(self):
+        """
+        determines initial parameters from the current data
+        """
         xMax = np.max(self.xPos)
         xMin = np.min(self.xPos)
         yMin = np.min(self.yPos)
