@@ -1,0 +1,439 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pygaussmarkov.CombinedSolver &#8212; pygaussmarkov 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pygaussmarkov.CombinedSolver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@author: john</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="k">as</span> <span class="nn">la</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="CombinedSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver">[docs]</a><span class="k">class</span> <span class="nc">CombinedSolver</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to solve problems of the type f(x,l) = 0. Must be implemented by a user class and the requred abstract functions implemented</span>
+<span class="sd">    The code is broken down into many small functions which can allow a child class to overload any of the methods to change the </span>
+<span class="sd">    performance of different methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">deltaChiSqToStop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">recordHistory</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        deltaChiSqToStop = if the change in chiSq is smaller than this the fitter will stop. Default = 0.01</span>
+<span class="sd">        dampingFactor = constant to chagne convergence speed. Default 1</span>
+<span class="sd">        useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="n">deltaChiSqToStop</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="n">dampingFactor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="n">useDampedGaussNeutonLineSearch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqDiffEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printParametersEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span> <span class="o">=</span> <span class="n">recordHistory</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getListOfParameterNames</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="CombinedSolver.getListOfParameterNames"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getListOfParameterNames">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getListOfParameterNames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of strings.</span>
+<span class="sd">        There should be one entry per parameter</span>
+<span class="sd">        The order should be the same as the order in the the A matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getAandAT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getAandAT">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getAandAT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Computers the determinant matrix A and its transpose AT</span>
+<span class="sd">        variables = the current variables</span>
+<span class="sd">        return two numpy matricies A and AT</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getBandBT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getBandBT">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getBandBT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Computers the determinant matrix A and its transpose AT</span>
+<span class="sd">        variables = the current variables</span>
+<span class="sd">        return two numpy matricies A and AT</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.getFxl"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getFxl">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getFxl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Gets the values for the given variables.</span>
+<span class="sd">        variables = the current variables</span>
+<span class="sd">        return a numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.getPinv"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getPinv">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getPinv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Gets the error matrix ((sig**2)) this is also the inverse of the weight matirx p</span>
+<span class="sd">        return a single numpy matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.fixParameter"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.fixParameter">[docs]</a>    <span class="k">def</span> <span class="nf">fixParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.freeParameter"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.freeParameter">[docs]</a>    <span class="k">def</span> <span class="nf">freeParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="CombinedSolver.getNumberOfFreeParameters"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfFreeParameters">[docs]</a>    <span class="k">def</span> <span class="nf">getNumberOfFreeParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="CombinedSolver.getFixedFreeArray"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getFixedFreeArray">[docs]</a>    <span class="k">def</span> <span class="nf">getFixedFreeArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getListOfParameterNames</span><span class="p">():</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getNumberOfParameters"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfParameters">[docs]</a>    <span class="k">def</span> <span class="nf">getNumberOfParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.continueSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.continueSolver">[docs]</a>    <span class="k">def</span> <span class="nf">continueSolver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chiSq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks weather the fitter should continue for another iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">-</span><span class="n">chiSq</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">-</span><span class="n">chiSq</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqDiffEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; ChiSq Difference = &#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span><span class="p">)</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">deltaChiSqToStop</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">&lt;</span><span class="n">chiSq</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+                <span class="k">return</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.newVariablesOK"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.newVariablesOK">[docs]</a>    <span class="k">def</span> <span class="nf">newVariablesOK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns if the new variables calulated are ok.</span>
+<span class="sd">        return boolean</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.reset"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the internal variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getChiSq"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getChiSq">[docs]</a>    <span class="k">def</span> <span class="nf">getChiSq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">BTpinvBinv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes w.p.w</span>
+<span class="sd">        w = the residual vector, the difference between f(x) and the measurements</span>
+<span class="sd">        returns value of w.p.w</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wp</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">BTpinvBinv</span><span class="p">)</span>
+        <span class="n">wpw</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+<span class="c1">#        print(wpw[0,0])</span>
+        <span class="k">return</span> <span class="n">wpw</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getFreeVariables"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getFreeVariables">[docs]</a>    <span class="k">def</span> <span class="nf">getFreeVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of np array with only the free variables</span>
+<span class="sd">        variables = np array of all the variables</span>
+<span class="sd">        </span>
+<span class="sd">        return = np array of the free variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfFreeParameters</span><span class="p">())</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">v</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">())):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+    
+<div class="viewcode-block" id="CombinedSolver.getBpinvBTinv"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getBpinvBTinv">[docs]</a>    <span class="k">def</span> <span class="nf">getBpinvBTinv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="n">pinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getPinv</span><span class="p">()</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">BT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBandBT</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">Bpinv</span> <span class="o">=</span> <span class="n">B</span><span class="o">*</span><span class="n">pinv</span>
+        <span class="n">BpinvBT</span> <span class="o">=</span> <span class="n">Bpinv</span><span class="o">*</span><span class="n">BT</span>
+        <span class="k">return</span> <span class="n">la</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">BpinvBT</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.computeATBPinvBTinv"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.computeATBPinvBTinv">[docs]</a>    <span class="k">def</span> <span class="nf">computeATBPinvBTinv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">AT</span><span class="p">,</span><span class="n">BPinvBTinv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes AT*BPinvBTinv</span>
+<span class="sd">        AT the transpose of the determinante matrix</span>
+<span class="sd">        BPinvBTinv the weight matrix</span>
+<span class="sd">        return AT*BPinvBTinv</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AT</span> <span class="o">*</span> <span class="n">BPinvBTinv</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.computerATBPinvBTinvA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.computerATBPinvBTinvA">[docs]</a>    <span class="k">def</span> <span class="nf">computerATBPinvBTinvA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ATBPinvBTinv</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATBPinvBTinv*A the design matrix</span>
+<span class="sd">        ATBPinvBTinv the transpose of the determinante matrix multiplied by the weight matrix</span>
+<span class="sd">        A the determinant matrix</span>
+<span class="sd">        return ATBPinvBTinv*A the design matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ATBPinvBTinv</span> <span class="o">*</span> <span class="n">A</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getATBPinvBTinvAandATBPinvBTinv"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAandATBPinvBTinv">[docs]</a>    <span class="k">def</span> <span class="nf">getATBPinvBTinvAandATBPinvBTinv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATBPinvBTinvA and ATBPinvBTinv by calling sub functions</span>
+<span class="sd">        variables =  the current variables</span>
+<span class="sd">        p = the weight matrix</span>
+<span class="sd">        returns ATBPinvBTinvA and ATBPinvBTinv</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">AT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAandAT</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">ATBPinvBTinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeATBPinvBTinv</span><span class="p">(</span><span class="n">AT</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+        <span class="n">ATBPinvBTinvA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computerATBPinvBTinvA</span><span class="p">(</span><span class="n">ATBPinvBTinv</span><span class="p">,</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ATBPinvBTinvA</span><span class="p">,</span> <span class="n">ATBPinvBTinv</span></div>
+        
+<div class="viewcode-block" id="CombinedSolver.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA">[docs]</a>    <span class="k">def</span> <span class="nf">getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATBPinvBTinvAinv, ATBPinvBTinv and ATBPinvBTinvA by calling sub functions</span>
+<span class="sd">        variables =  the current variables</span>
+<span class="sd">        p = the weight matrix</span>
+<span class="sd">        returns ATBPinvBTinvAinv, ATBPinvBTinv and ATBPinvBTinvA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ATBPinvBTinvA</span><span class="p">,</span> <span class="n">ATBPinvBTinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATBPinvBTinvAandATBPinvBTinv</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">la</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">ATBPinvBTinvA</span><span class="p">),</span> <span class="n">ATBPinvBTinv</span><span class="p">,</span> <span class="n">ATBPinvBTinvA</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getXHatandATBPinvBTinvA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getXHatandATBPinvBTinvA">[docs]</a>    <span class="k">def</span> <span class="nf">getXHatandATBPinvBTinvA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+        <span class="n">ATBPinvBTinvAinv</span><span class="p">,</span> <span class="n">ATBPinvBTinv</span><span class="p">,</span> <span class="n">ATBPinvBTinvA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+        <span class="n">xHat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeXhat</span><span class="p">(</span><span class="n">ATBPinvBTinvAinv</span><span class="p">,</span><span class="n">ATBPinvBTinv</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xHat</span><span class="p">,</span> <span class="n">ATBPinvBTinvA</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.computeXhat"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.computeXhat">[docs]</a>    <span class="k">def</span> <span class="nf">computeXhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATBPinvBTinvAinv</span><span class="p">,</span><span class="n">ATBPinvBTinv</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATBPinvBTinvAinv * ATBPinvBTinv</span>
+<span class="sd">        ATBPinvBTinvAinv = the inverse of the design matrix</span>
+<span class="sd">        ATBPinvBTinv = the transpose of the determinant matrix multiplied by the weight matrix</span>
+<span class="sd">        w = the residual vecotr (f(x,l))</span>
+<span class="sd">        retuns the negetive value of the update vector (ATBPinvBTinvAinv * ATBPinvBTinv).w</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ATBPinvBTinvAinvATBPinvBTinv</span> <span class="o">=</span> <span class="n">ATBPinvBTinvAinv</span> <span class="o">*</span> <span class="n">ATBPinvBTinv</span>
+        <span class="n">xHat</span> <span class="o">=</span> <span class="n">ATBPinvBTinvAinvATBPinvBTinv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xHat</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getNewVariables"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getNewVariables">[docs]</a>    <span class="k">def</span> <span class="nf">getNewVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combines the current variables with the update vector xHat and the scale parameter alpha</span>
+<span class="sd">        The method takes account of the fixed and free variables</span>
+<span class="sd">        variables = the current variables. This should inclule all the variables either free or fixed</span>
+<span class="sd">        alpha the scale factor for xHat. this is a scalar value</span>
+<span class="sd">        xHat the update vector. This should only include the updates for the free parameters</span>
+<span class="sd">        returns the new variables vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixedVar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">fixedVar</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dampingFactor</span><span class="o">*</span><span class="n">xHat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.getUncertaintyList"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.getUncertaintyList">[docs]</a>    <span class="k">def</span> <span class="nf">getUncertaintyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATBPinvBTinvAInv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        takes the inverse of the design matrix and returns a list of the the uncertainities for the parameters</span>
+<span class="sd">        ATBPinvBTinvAInv is the inverse of the design matix</span>
+<span class="sd">        returns a list of length number parmetrs, for the uncertainities for each parmeter. If the parameter is fixed</span>
+<span class="sd">        then the value will be 0.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">un</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">ATBPinvBTinvAInv</span><span class="p">))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfParameters</span><span class="p">())</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixedVar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfParameters</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">fixedVar</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">un</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.runDampedGaussNewtonLineSearch"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.runDampedGaussNewtonLineSearch">[docs]</a>    <span class="k">def</span> <span class="nf">runDampedGaussNewtonLineSearch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATBPinvBTinvA</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">xHat</span><span class="p">,</span><span class="n">chi0</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">,</span><span class="n">fxl</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If useDampedGaussNeutonLineSearch is True will run a line search, else return 1</span>
+<span class="sd">        returns alpha</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">useDampedGaussNeutonLineSearch</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">freeVars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFreeVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">freeVars</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ATBPinvBTinvA</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">freeVars</span><span class="p">)</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">chi0</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getFxl</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNewVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">)),</span><span class="n">BpinvBTinv</span><span class="p">)))</span><span class="o">&gt;=</span><span class="n">alpha</span><span class="o">*</span><span class="n">v</span> <span class="p">:</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">*</span><span class="mf">0.5</span>
+            <span class="k">return</span> <span class="n">alpha</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span></div>
+    
+<div class="viewcode-block" id="CombinedSolver.solve"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CombinedSolver.CombinedSolver.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method solves the model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">fxl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFxl</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">fxl</span>
+        <span class="n">BpinvBTinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBpinvBTinv</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">chiSq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">previousVariables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continueSolver</span><span class="p">(</span><span class="n">chiSq</span><span class="p">)</span> <span class="ow">or</span> <span class="n">first</span><span class="p">):</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="n">xHat</span><span class="p">,</span> <span class="n">ATBPinvBTinvA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getXHatandATBPinvBTinvA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+            
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runDampedGaussNewtonLineSearch</span><span class="p">(</span><span class="n">ATBPinvBTinvA</span><span class="p">,</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">xHat</span><span class="p">,</span><span class="n">chiSq</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">),</span><span class="n">BpinvBTinv</span><span class="p">,</span><span class="n">fxl</span><span class="p">)</span>
+            
+            <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getNewVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">)</span>
+            <span class="n">previousVariables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">fxl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFxl</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">fxl</span>
+            
+            <span class="n">BpinvBTinv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBpinvBTinv</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">chiSq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; ChiSq = &#39;</span><span class="p">,</span><span class="n">chiSq</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printParametersEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; Params = &#39;</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">newVariablesOK</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using previous variables&quot;</span><span class="p">)</span>
+            <span class="n">variables</span><span class="o">=</span> <span class="n">previousVariables</span>
+        
+        <span class="c1">#compute the final uncertainties</span>
+        <span class="n">ATBPinvBTinvAinv</span><span class="p">,</span> <span class="n">ATBPinvBTinv</span><span class="p">,</span> <span class="n">ATBPinvBTinvA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">BpinvBTinv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalChi_</span> <span class="o">=</span> <span class="n">chiSq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covarianceMatrix_</span> <span class="o">=</span> <span class="n">ATBPinvBTinvAinv</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalVarialbes_</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainties_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getUncertaintyList</span><span class="p">(</span><span class="n">ATBPinvBTinvAinv</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainties_</span></div></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pygaussmarkov</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pygaussmarkov</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dr John Dale.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

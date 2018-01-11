@@ -1,0 +1,447 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pygaussmarkov.ParametricSolver &#8212; pygaussmarkov 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pygaussmarkov.ParametricSolver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">module contains the ParametricSolver object</span>
+<span class="sd">@author: john</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="k">as</span> <span class="nn">la</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="ParametricSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver">[docs]</a><span class="k">class</span> <span class="nc">ParametricSolver</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to solve problems of the type f(x) = L. Must be implemented by a user class and the requred abstract functions implemented</span>
+<span class="sd">    The code is broken down into many small functions which can allow a child class to overload any of the methods to change the </span>
+<span class="sd">    performance of different methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">deltaChiSqToStop</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">recordHistory</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        deltaChiSqToStop = if the change in chiSq is smaller than this the fitter will stop. Default = 0.01</span>
+<span class="sd">        dampingFactor = constant to chagne convergence speed. Default 1</span>
+<span class="sd">        useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="n">deltaChiSqToStop</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="n">dampingFactor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="n">useDampedGaussNeutonLineSearch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqDiffEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printParametersEachIteration</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span> <span class="o">=</span> <span class="n">recordHistory</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getListOfParameterNames</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="ParametricSolver.getListOfParameterNames"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getListOfParameterNames">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getListOfParameterNames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of strings.</span>
+<span class="sd">        There should be one entry per parameter</span>
+<span class="sd">        The order should be the same as the order in the the A matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getAandAT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getAandAT">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getAandAT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Computers the determinant matrix A and its transpose AT</span>
+<span class="sd">        variables = the current variables</span>
+<span class="sd">        return two numpy matricies A and AT</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getFx"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getFx">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getFx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Gets the values for the given variables.</span>
+<span class="sd">        variables = the current variables</span>
+<span class="sd">        return a numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getP"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getP">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Gets the weight matrix (1/(sig**2))</span>
+<span class="sd">        return a single numpy matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getMeasurements"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getMeasurements">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">getMeasurements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        User implemented method. Gets the measurements </span>
+<span class="sd">        returns a numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.fixParameter"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.fixParameter">[docs]</a>    <span class="k">def</span> <span class="nf">fixParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.freeParameter"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.freeParameter">[docs]</a>    <span class="k">def</span> <span class="nf">freeParameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ParametricSolver.getNumberOfFreeParameters"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfFreeParameters">[docs]</a>    <span class="k">def</span> <span class="nf">getNumberOfFreeParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="ParametricSolver.getFixedFreeArray"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getFixedFreeArray">[docs]</a>    <span class="k">def</span> <span class="nf">getFixedFreeArray</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getListOfParameterNames</span><span class="p">():</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getNumberOfParameters"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfParameters">[docs]</a>    <span class="k">def</span> <span class="nf">getNumberOfParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.continueSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.continueSolver">[docs]</a>    <span class="k">def</span> <span class="nf">continueSolver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chiSq</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks weather the fitter should continue for another iteration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">-</span><span class="n">chiSq</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">-</span><span class="n">chiSq</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqDiffEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; ChiSq Difference = &#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lastChiDifference_</span><span class="p">)</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">deltaChiSqToStop</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span><span class="o">&lt;</span><span class="n">chiSq</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="n">chiSq</span>
+                <span class="k">return</span> <span class="kc">True</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.newVariablesOK"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.newVariablesOK">[docs]</a>    <span class="k">def</span> <span class="nf">newVariablesOK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns if the new variables calulated are ok.</span>
+<span class="sd">        return boolean</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.reset"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the internal variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newVariableOK</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firstChi</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oldChi</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getChiSq"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getChiSq">[docs]</a>    <span class="k">def</span> <span class="nf">getChiSq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes w.p.w</span>
+<span class="sd">        w = the residual vector, the difference between f(x) and the measurements</span>
+<span class="sd">        returns value of w.p.w</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wp</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">wpw</span> <span class="o">=</span> <span class="n">wp</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+<span class="c1">#        print(wpw)</span>
+        <span class="k">return</span> <span class="n">wpw</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getW"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getW">[docs]</a>    <span class="k">def</span> <span class="nf">getW</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">measurements</span><span class="p">,</span> <span class="n">fx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes f(x) - measurements</span>
+<span class="sd">        measurements = the measurements</span>
+<span class="sd">        fx = the calcualted values</span>
+<span class="sd">        returns fx-measurements</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">fx</span> <span class="o">-</span> <span class="n">measurements</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.computeATP"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.computeATP">[docs]</a>    <span class="k">def</span> <span class="nf">computeATP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">AT</span><span class="p">,</span><span class="n">P</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes AT*P</span>
+<span class="sd">        AT the transpose of the determinante matrix</span>
+<span class="sd">        P the weight matrix</span>
+<span class="sd">        return AT*P</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AT</span> <span class="o">*</span> <span class="n">P</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.computerATPA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.computerATPA">[docs]</a>    <span class="k">def</span> <span class="nf">computerATPA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ATP</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATP*P the design matrix</span>
+<span class="sd">        ATP the transpose of the determinante matrix multiplied by the weight matrix</span>
+<span class="sd">        A the determinant matrix</span>
+<span class="sd">        return ATP*A the design matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ATP</span> <span class="o">*</span> <span class="n">A</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.computeXhat"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.computeXhat">[docs]</a>    <span class="k">def</span> <span class="nf">computeXhat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATPAinv</span><span class="p">,</span><span class="n">ATP</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATPAinv * ATP</span>
+<span class="sd">        ATPAinv = the inverse of the design matrix</span>
+<span class="sd">        ATP = the transpose of the determinant matrix multiplied by the weight matrix</span>
+<span class="sd">        w = the residual vecotr (f(x)-measurements)</span>
+<span class="sd">        retuns the negetive value of the update vector (ATPAinv * ATP).w</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ATPAinvATP</span> <span class="o">=</span> <span class="n">ATPAinv</span> <span class="o">*</span> <span class="n">ATP</span>
+        <span class="n">xHat</span> <span class="o">=</span> <span class="n">ATPAinvATP</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xHat</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getATPAandATP"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getATPAandATP">[docs]</a>    <span class="k">def</span> <span class="nf">getATPAandATP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATPA and ATP by calling sub functions</span>
+<span class="sd">        variables =  the current variables</span>
+<span class="sd">        p = the weight matrix</span>
+<span class="sd">        returns ATPA and ATP</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">AT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAandAT</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">ATP</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeATP</span><span class="p">(</span><span class="n">AT</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">ATPA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computerATPA</span><span class="p">(</span><span class="n">ATP</span><span class="p">,</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ATPA</span><span class="p">,</span> <span class="n">ATP</span></div>
+        
+<div class="viewcode-block" id="ParametricSolver.getATPAinvATPandATPA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getATPAinvATPandATPA">[docs]</a>    <span class="k">def</span> <span class="nf">getATPAinvATPandATPA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes ATPAinv, ATP and ATPA by calling sub functions</span>
+<span class="sd">        variables =  the current variables</span>
+<span class="sd">        p = the weight matrix</span>
+<span class="sd">        returns ATPAinv, ATP and ATPA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ATPA</span><span class="p">,</span> <span class="n">ATP</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATPAandATP</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">la</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">ATPA</span><span class="p">),</span> <span class="n">ATP</span><span class="p">,</span> <span class="n">ATPA</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getXHatandATPA"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getXHatandATPA">[docs]</a>    <span class="k">def</span> <span class="nf">getXHatandATPA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">w</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes xHat by calling subfunctions.</span>
+<span class="sd">        variables =  the current variables</span>
+<span class="sd">        p = the weight matrix</span>
+<span class="sd">        w = the residual vecotr (f(x)-measurements)</span>
+<span class="sd">        returns -xHat(subtract from current x to get new x), ATPAInv</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ATPAInv</span><span class="p">,</span> <span class="n">ATP</span><span class="p">,</span> <span class="n">ATPA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATPAinvATPandATPA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">xHat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeXhat</span><span class="p">(</span><span class="n">ATPAInv</span><span class="p">,</span><span class="n">ATP</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xHat</span><span class="p">,</span> <span class="n">ATPA</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getFreeVariables"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getFreeVariables">[docs]</a>    <span class="k">def</span> <span class="nf">getFreeVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of np array with only the free variables</span>
+<span class="sd">        variables = np array of all the variables</span>
+<span class="sd">        </span>
+<span class="sd">        return = np array of the free variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfFreeParameters</span><span class="p">())</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">v</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">())):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+            
+    
+<div class="viewcode-block" id="ParametricSolver.runDampedGaussNewtonLineSearch"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.runDampedGaussNewtonLineSearch">[docs]</a>    <span class="k">def</span> <span class="nf">runDampedGaussNewtonLineSearch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATPA</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">xHat</span><span class="p">,</span><span class="n">chi0</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">fx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If useDampedGaussNeutonLineSearch is True will run a line search, else return 1</span>
+<span class="sd">        returns alpha</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">useDampedGaussNeutonLineSearch</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">freeVars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFreeVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">freeVars</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ATPA</span><span class="p">))</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">freeVars</span><span class="p">)</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">chi0</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getW</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">getFx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNewVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">))),</span><span class="n">p</span><span class="p">)))</span><span class="o">&gt;=</span><span class="n">alpha</span><span class="o">*</span><span class="n">v</span> <span class="p">:</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">*</span><span class="mf">0.5</span>
+            <span class="k">return</span> <span class="n">alpha</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span></div>
+        
+    
+<div class="viewcode-block" id="ParametricSolver.getNewVariables"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getNewVariables">[docs]</a>    <span class="k">def</span> <span class="nf">getNewVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combines the current variables with the update vector xHat and the scale parameter alpha</span>
+<span class="sd">        The method takes account of the fixed and free variables</span>
+<span class="sd">        variables = the current variables. This should inclule all the variables either free or fixed</span>
+<span class="sd">        alpha the scale factor for xHat. this is a scalar value</span>
+<span class="sd">        xHat the update vector. This should only include the updates for the free parameters</span>
+<span class="sd">        returns the new variables vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixedVar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">fixedVar</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dampingFactor</span><span class="o">*</span><span class="n">xHat</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.getUncertaintyList"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.getUncertaintyList">[docs]</a>    <span class="k">def</span> <span class="nf">getUncertaintyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ATPAInv</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        takes the inverse of the design matrix and returns a list of the the uncertainities for the parameters</span>
+<span class="sd">        ATPAInv is the inverse of the design matix</span>
+<span class="sd">        returns a list of length number parmetrs, for the uncertainities for each parmeter. If the parameter is fixed</span>
+<span class="sd">        then the value will be 0.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">un</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">ATPAInv</span><span class="p">))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfParameters</span><span class="p">())</span>
+        <span class="n">skipCount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixedVar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFixedFreeArray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfParameters</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">fixedVar</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="n">skipCount</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">un</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">skipCount</span><span class="p">]</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+    
+<div class="viewcode-block" id="ParametricSolver.solve"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.ParametricSolver.ParametricSolver.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method solves the model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFx</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMeasurements</span><span class="p">()</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getW</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">fx</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getP</span><span class="p">()</span>
+        <span class="n">chiSq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">previousVariables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        
+        <span class="k">while</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continueSolver</span><span class="p">(</span><span class="n">chiSq</span><span class="p">)</span> <span class="ow">or</span> <span class="n">first</span><span class="p">):</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="n">xHat</span><span class="p">,</span> <span class="n">ATPA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getXHatandATPA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runDampedGaussNewtonLineSearch</span><span class="p">(</span><span class="n">ATPA</span><span class="p">,</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">xHat</span><span class="p">,</span><span class="n">chiSq</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">),</span><span class="n">p</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">fx</span><span class="p">)</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getNewVariables</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">alpha</span><span class="p">,</span><span class="n">xHat</span><span class="p">)</span>
+            <span class="n">previousVariables</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFx</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getW</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">fx</span><span class="p">)</span>
+            <span class="n">chiSq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getChiSq</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printChiSqEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; ChiSq = &#39;</span><span class="p">,</span><span class="n">chiSq</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printParametersEachIteration</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noInterations</span><span class="p">,</span><span class="s1">&#39; Params = &#39;</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordHistory</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">newVariablesOK</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using previous variables&quot;</span><span class="p">)</span>
+            <span class="n">variables</span><span class="o">=</span> <span class="n">previousVariables</span>
+        
+        <span class="c1">#compute the final uncertainties</span>
+        <span class="n">ATPAInv</span><span class="p">,</span> <span class="n">ATP</span><span class="p">,</span> <span class="n">ATPA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getATPAinvATPandATPA</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalChi_</span> <span class="o">=</span> <span class="n">chiSq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">covarianceMatrix_</span> <span class="o">=</span> <span class="n">ATPAInv</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalVarialbes_</span> <span class="o">=</span> <span class="n">variables</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncertainties_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getUncertaintyList</span><span class="p">(</span><span class="n">ATPAInv</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainties_</span></div></div>
+            
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pygaussmarkov</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pygaussmarkov</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dr John Dale.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

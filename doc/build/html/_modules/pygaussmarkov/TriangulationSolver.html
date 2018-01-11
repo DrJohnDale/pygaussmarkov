@@ -1,0 +1,225 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pygaussmarkov.TriangulationSolver &#8212; pygaussmarkov 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pygaussmarkov.TriangulationSolver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">module contains the TriangulationSover object wihch can sovle triangulatin problems</span>
+<span class="sd">@author: john</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygaussmarkov.ParametricSolver</span> <span class="k">import</span> <span class="n">ParametricSolver</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pygaussmarkov.GaussMarkovUtilities</span> <span class="k">as</span> <span class="nn">GMUtils</span>
+<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="k">as</span> <span class="nn">la</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
+
+<div class="viewcode-block" id="TriangulationSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver">[docs]</a><span class="k">class</span> <span class="nc">TriangulationSolver</span><span class="p">(</span><span class="n">ParametricSolver</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; triangulation with parametric solver &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xPos</span><span class="p">,</span> <span class="n">yPos</span><span class="p">,</span> <span class="n">zPos</span><span class="p">,</span><span class="n">measurements</span><span class="p">,</span> <span class="n">uncertainties</span><span class="p">,</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">recordHistory</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        xPos = the x positions</span>
+<span class="sd">        yPos = the y positions</span>
+<span class="sd">        measurements = the distances</span>
+<span class="sd">        uncertainties = the measurement uncertainties</span>
+<span class="sd">        deltaChiSqToStop = if the change in chiSq is smaller than this the fitter will stop. Default = 0.01</span>
+<span class="sd">        dampingFactor = constant to chagne convergence speed. Default 1</span>
+<span class="sd">        useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TriangulationSolver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="n">deltaChiSqToStop</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="n">dampingFactor</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="n">useDampedGaussNeutonLineSearch</span><span class="p">,</span><span class="n">recordHistory</span><span class="o">=</span><span class="n">recordHistory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xPos</span> <span class="o">=</span> <span class="n">xPos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yPos</span> <span class="o">=</span> <span class="n">yPos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zPos</span> <span class="o">=</span> <span class="n">zPos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span> <span class="o">=</span> <span class="n">measurements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uncert</span> <span class="o">=</span> <span class="n">uncertainties</span>
+    
+<div class="viewcode-block" id="TriangulationSolver.x_parName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.x_parName">[docs]</a>    <span class="k">def</span> <span class="nf">x_parName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;X&#39;</span></div>
+    
+<div class="viewcode-block" id="TriangulationSolver.y_parName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.y_parName">[docs]</a>    <span class="k">def</span> <span class="nf">y_parName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Y&#39;</span></div>
+    
+<div class="viewcode-block" id="TriangulationSolver.z_parName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.z_parName">[docs]</a>    <span class="k">def</span> <span class="nf">z_parName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Z&#39;</span></div>
+    
+<div class="viewcode-block" id="TriangulationSolver.getListOfParameterNames"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.getListOfParameterNames">[docs]</a>    <span class="k">def</span> <span class="nf">getListOfParameterNames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_parName</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">y_parName</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">z_parName</span><span class="p">()]</span></div>
+    
+<div class="viewcode-block" id="TriangulationSolver.getAandAT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.getAandAT">[docs]</a>    <span class="k">def</span> <span class="nf">getAandAT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfFreeParameters</span><span class="p">()]))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)):</span>
+            <span class="n">skipVal</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="p">(</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">zPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">);</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_parName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipVal</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_parName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="o">-</span><span class="n">skipVal</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipVal</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">z_parName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="o">-</span><span class="n">skipVal</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">variables</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="n">v</span>
+        
+        <span class="n">mt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">mt</span></div>
+        
+<div class="viewcode-block" id="TriangulationSolver.getFx"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.getFx">[docs]</a>    <span class="k">def</span> <span class="nf">getFx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="p">(</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="o">-</span><span class="n">variables</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">zPos</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="TriangulationSolver.getP"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.getP">[docs]</a>    <span class="k">def</span> <span class="nf">getP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GMUtils</span><span class="o">.</span><span class="n">generatePMatrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uncert</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">measurements</span><span class="p">))</span></div>
+        
+<div class="viewcode-block" id="TriangulationSolver.getMeasurements"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.TriangulationSolver.getMeasurements">[docs]</a>    <span class="k">def</span> <span class="nf">getMeasurements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurements</span></div></div>
+                
+                
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.TriangulationSolver.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">xPos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">2.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">2.0</span><span class="p">])</span>
+    <span class="n">yPos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">])</span>
+    <span class="n">zPos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="o">-</span><span class="mf">2.0</span><span class="p">])</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span>
+    <span class="n">z0</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">noiseWidth</span> <span class="o">=</span> <span class="mf">0.001</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noiseWidth</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xPos</span><span class="p">))</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">xPos</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="p">(</span><span class="n">yPos</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="p">(</span><span class="n">zPos</span><span class="o">-</span><span class="n">z0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">noise</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+    <span class="n">uncert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">noiseWidth</span><span class="p">])</span>
+
+    <span class="n">fitter</span> <span class="o">=</span> <span class="n">TriangulationSolver</span><span class="p">(</span><span class="n">xPos</span><span class="p">,</span><span class="n">yPos</span><span class="p">,</span><span class="n">zPos</span><span class="p">,</span><span class="n">distances</span><span class="p">,</span><span class="n">uncert</span><span class="p">,</span><span class="n">dampingFactor</span><span class="o">=</span><span class="mf">0.11</span><span class="p">,</span><span class="n">recordHistory</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># perform eigen value decomposion to study design</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">getP</span><span class="p">()</span> 
+    <span class="n">ATPA</span><span class="p">,</span><span class="n">ATP</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">getATPAandATP</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mf">0.0</span><span class="p">]),</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">w</span><span class="p">,</span><span class="n">v</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">ATPA</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>    
+    
+    <span class="c1"># run the fit and display the results</span>
+    <span class="n">startVar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.5</span><span class="p">,</span><span class="mf">4.5</span><span class="p">,</span><span class="mf">1.0</span><span class="p">]);</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">startVar</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of iterations = &#39;</span><span class="p">,</span><span class="n">fitter</span><span class="o">.</span><span class="n">noInterations</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Solution = &#39;</span><span class="p">,</span><span class="n">out</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Uncertainties = &#39;</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final ChiSq = &#39;</span><span class="p">,</span> <span class="n">fitter</span><span class="o">.</span><span class="n">finalChi_</span><span class="p">)</span>
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xPos</span><span class="p">,</span> <span class="n">yPos</span><span class="p">,</span> <span class="n">zPos</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">startVar</span><span class="p">[</span><span class="mi">0</span><span class="p">]],[</span><span class="n">startVar</span><span class="p">[</span><span class="mi">1</span><span class="p">]],[</span><span class="n">startVar</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]],[</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]],[</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">)</span>
+    <span class="n">xStep</span><span class="p">,</span> <span class="n">yStep</span><span class="p">,</span> <span class="n">zStep</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span><span class="nb">list</span><span class="p">(),</span><span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">xStep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">yStep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">zStep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xStep</span><span class="p">,</span><span class="n">yStep</span><span class="p">,</span><span class="n">zStep</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">)</span>
+    
+    <span class="n">figManager</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_current_fig_manager</span><span class="p">()</span>
+    <span class="n">figManager</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">showMaximized</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pygaussmarkov</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pygaussmarkov</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dr John Dale.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

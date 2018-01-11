@@ -1,0 +1,280 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pygaussmarkov.CircleSolver &#8212; pygaussmarkov 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pygaussmarkov.CircleSolver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sun May 14 11:11:17 2017</span>
+
+<span class="sd">@author: john</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pygaussmarkov.CombinedSolver</span> <span class="k">import</span> <span class="n">CombinedSolver</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<div class="viewcode-block" id="CircleSolver"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver">[docs]</a><span class="k">class</span> <span class="nc">CircleSolver</span><span class="p">(</span><span class="n">CombinedSolver</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Simple y=mx+c fitting &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xPos</span><span class="p">,</span> <span class="n">yPos</span><span class="p">,</span> <span class="n">xPosUncert</span><span class="p">,</span> <span class="n">yPosUncert</span> <span class="p">,</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">recordHistory</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        xPos = the x positions, these are measurements</span>
+<span class="sd">        yPos = the y positions, these are measurements</span>
+<span class="sd">        xPosUncert = the errors on the x meaurements. Should be lenght 1 or equal to len(xpos)</span>
+<span class="sd">        yPosUncert = the errors on the y measurements.  Should be lenght 1 or equal to len(ypos)</span>
+<span class="sd">        deltaChiSqToStop = if the change in chiSq is smaller than this the fitter will stop. Default = 0.01</span>
+<span class="sd">        dampingFactor = constant to chagne convergence speed. Default 1</span>
+<span class="sd">        useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CircleSolver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">deltaChiSqToStop</span> <span class="o">=</span> <span class="n">deltaChiSqToStop</span><span class="p">,</span><span class="n">dampingFactor</span> <span class="o">=</span> <span class="n">dampingFactor</span><span class="p">,</span><span class="n">useDampedGaussNeutonLineSearch</span> <span class="o">=</span> <span class="n">useDampedGaussNeutonLineSearch</span><span class="p">,</span><span class="n">recordHistory</span><span class="o">=</span><span class="n">recordHistory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xPos</span> <span class="o">=</span> <span class="n">xPos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yPos</span> <span class="o">=</span> <span class="n">yPos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span> <span class="o">=</span> <span class="n">xPosUncert</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span> <span class="o">=</span> <span class="n">yPosUncert</span>
+     
+<div class="viewcode-block" id="CircleSolver.xc_paramName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.xc_paramName">[docs]</a>    <span class="k">def</span> <span class="nf">xc_paramName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;xc&#39;</span></div>
+    
+<div class="viewcode-block" id="CircleSolver.yc_paramName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.yc_paramName">[docs]</a>    <span class="k">def</span> <span class="nf">yc_paramName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;yc&#39;</span></div>
+    
+<div class="viewcode-block" id="CircleSolver.r_paramName"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.r_paramName">[docs]</a>    <span class="k">def</span> <span class="nf">r_paramName</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;r&#39;</span></div>
+    
+<div class="viewcode-block" id="CircleSolver.getListOfParameterNames"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.getListOfParameterNames">[docs]</a>    <span class="k">def</span> <span class="nf">getListOfParameterNames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_paramName</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">yc_paramName</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">r_paramName</span><span class="p">()]</span></div>
+    
+<div class="viewcode-block" id="CircleSolver.getAandAT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.getAandAT">[docs]</a>    <span class="k">def</span> <span class="nf">getAandAT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">getNumberOfFreeParameters</span><span class="p">()]))</span>
+        
+        <span class="n">xCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">yCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">rad</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)):</span>
+            <span class="n">skipVal</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_paramName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">xCen</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipVal</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">yc_paramName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="o">-</span><span class="n">skipVal</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">yCen</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">skipVal</span><span class="o">+=</span><span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">r_paramName</span><span class="p">()]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="o">-</span><span class="n">skipVal</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">rad</span>
+        
+        <span class="n">mt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">mt</span></div>
+        
+    
+<div class="viewcode-block" id="CircleSolver.getBandBT"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.getBandBT">[docs]</a>    <span class="k">def</span> <span class="nf">getBandBT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">]))</span>
+        
+        <span class="n">xCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">yCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="c1">#        rad = variables[2]</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)):</span>
+            <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">xCen</span>
+            <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">yCen</span>
+            
+        <span class="n">mt</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">mt</span></div>
+        
+<div class="viewcode-block" id="CircleSolver.getFxl"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.getFxl">[docs]</a>    <span class="k">def</span> <span class="nf">getFxl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">variables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        (x-xc)**2 + (y-yc)**2 - r**2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">))</span>
+        <span class="n">xCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">yCen</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">rad</span> <span class="o">=</span> <span class="n">variables</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">)):</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">xCen</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">yCen</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">rad</span><span class="o">**</span><span class="mi">2</span>
+        
+        <span class="k">return</span> <span class="n">out</span><span class="p">;</span></div>
+        
+<div class="viewcode-block" id="CircleSolver.getPinv"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.getPinv">[docs]</a>    <span class="k">def</span> <span class="nf">getPinv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">)</span><span class="o">!=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error generating weight matrix error. xPosUncert array length must be 1 or equal to length of xPos. len errors = &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39; len xPos = &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">))</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">)</span><span class="o">!=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error generating weight matrix error.yPosUncert array length must be 1 or equal to length of yPos. len errors = &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39; len yPos = &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">))</span>
+        
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)):</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)):</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPosUncert</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">)):</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">)):</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPosUncert</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>       
+                
+        <span class="k">return</span> <span class="n">m</span></div>
+    
+<div class="viewcode-block" id="CircleSolver.determinStatingVariables"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.CircleSolver.determinStatingVariables">[docs]</a>    <span class="k">def</span> <span class="nf">determinStatingVariables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">xMax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)</span>
+        <span class="n">xMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xPos</span><span class="p">)</span>
+        <span class="n">yMin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yPos</span><span class="p">)</span>
+        
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">xMax</span><span class="o">-</span><span class="n">xMin</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">xMin</span><span class="o">+</span><span class="n">r</span>
+        <span class="n">yc</span> <span class="o">=</span> <span class="n">yMin</span><span class="o">+</span><span class="n">r</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xc</span><span class="p">,</span><span class="n">yc</span><span class="p">,</span><span class="n">r</span><span class="p">])</span></div></div>
+        
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../pygaussmarkov.html#pygaussmarkov.CircleSolver.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">noiseX</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">noiseY</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">xPos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">xc</span><span class="o">-</span><span class="n">r</span><span class="p">,</span><span class="n">xc</span><span class="o">+</span><span class="n">r</span><span class="o">+</span><span class="mf">0.05</span><span class="p">,</span><span class="mf">0.05</span><span class="p">)])</span>
+    <span class="n">yPos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xPos</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xPos</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">xc</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">+</span> <span class="n">yc</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">yPos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">v</span><span class="o">+</span><span class="n">yc</span>
+    
+    <span class="n">xPos</span> <span class="o">=</span> <span class="n">xPos</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noiseX</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xPos</span><span class="p">))</span>
+    <span class="n">yPos</span> <span class="o">=</span> <span class="n">yPos</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">noiseY</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yPos</span><span class="p">))</span>
+        
+    <span class="n">fitter</span> <span class="o">=</span> <span class="n">CircleSolver</span><span class="p">(</span><span class="n">xPos</span><span class="p">,</span><span class="n">yPos</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">noiseX</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">noiseY</span><span class="p">]),</span><span class="n">recordHistory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">startParam</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">determinStatingVariables</span><span class="p">()</span>
+    <span class="n">out</span><span class="p">,</span><span class="n">err</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">startParam</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of iterations = &#39;</span><span class="p">,</span><span class="n">fitter</span><span class="o">.</span><span class="n">noInterations</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Solution = &#39;</span><span class="p">,</span><span class="n">out</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Uncertainties = &#39;</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Final ChiSq = &#39;</span><span class="p">,</span> <span class="n">fitter</span><span class="o">.</span><span class="n">finalChi_</span><span class="p">)</span>
+
+<span class="c1">#    print(xPos)</span>
+<span class="c1">#    print(yPos)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
+    <span class="n">cInitial</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Circle</span><span class="p">((</span><span class="n">startParam</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">startParam</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">startParam</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">cFit</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Circle</span><span class="p">((</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span><span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">otherCirc</span> <span class="o">=</span> <span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Circle</span><span class="p">((</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">clip_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">fitter</span><span class="o">.</span><span class="n">history</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xPos</span><span class="p">,</span><span class="n">yPos</span><span class="p">,</span><span class="s1">&#39;*k&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">cInitial</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">cFit</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">otherCirc</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    
+    <span class="n">figManager</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_current_fig_manager</span><span class="p">()</span>
+    <span class="n">figManager</span><span class="o">.</span><span class="n">window</span><span class="o">.</span><span class="n">showMaximized</span><span class="p">()</span>
+    
+    <span class="k">return</span>        </div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pygaussmarkov</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pygaussmarkov</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dr John Dale.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

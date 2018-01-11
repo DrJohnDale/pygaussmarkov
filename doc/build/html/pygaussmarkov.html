@@ -1,0 +1,703 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pygaussmarkov package &#8212; pygaussmarkov 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pygaussmarkov-package">
+<h1>pygaussmarkov package<a class="headerlink" href="#pygaussmarkov-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pygaussmarkov.CircleSolver">
+<span id="pygaussmarkov-circlesolver-module"></span><h2>pygaussmarkov.CircleSolver module<a class="headerlink" href="#module-pygaussmarkov.CircleSolver" title="Permalink to this headline">¶</a></h2>
+<p>Created on Sun May 14 11:11:17 2017</p>
+<p>&#64;author: john</p>
+<dl class="class">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver">
+<em class="property">class </em><code class="descclassname">pygaussmarkov.CircleSolver.</code><code class="descname">CircleSolver</code><span class="sig-paren">(</span><em>xPos</em>, <em>yPos</em>, <em>xPosUncert</em>, <em>yPosUncert</em>, <em>deltaChiSqToStop=0.01</em>, <em>dampingFactor=1</em>, <em>useDampedGaussNeutonLineSearch=False</em>, <em>recordHistory=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygaussmarkov.CombinedSolver.CombinedSolver" title="pygaussmarkov.CombinedSolver.CombinedSolver"><code class="xref py py-class docutils literal"><span class="pre">pygaussmarkov.CombinedSolver.CombinedSolver</span></code></a></p>
+<p>Simple y=mx+c fitting</p>
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.determinStatingVariables">
+<code class="descname">determinStatingVariables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.determinStatingVariables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.determinStatingVariables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.getAandAT">
+<code class="descname">getAandAT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.getAandAT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.getAandAT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.getBandBT">
+<code class="descname">getBandBT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.getBandBT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.getBandBT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.getFxl">
+<code class="descname">getFxl</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.getFxl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.getFxl" title="Permalink to this definition">¶</a></dt>
+<dd><p>(x-xc)**2 + (y-yc)**2 - r**2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.getListOfParameterNames">
+<code class="descname">getListOfParameterNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.getListOfParameterNames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.getListOfParameterNames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.getPinv">
+<code class="descname">getPinv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.getPinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.getPinv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.r_paramName">
+<code class="descname">r_paramName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.r_paramName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.r_paramName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.xc_paramName">
+<code class="descname">xc_paramName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.xc_paramName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.xc_paramName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CircleSolver.CircleSolver.yc_paramName">
+<code class="descname">yc_paramName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#CircleSolver.yc_paramName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.CircleSolver.yc_paramName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pygaussmarkov.CircleSolver.main">
+<code class="descclassname">pygaussmarkov.CircleSolver.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CircleSolver.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CircleSolver.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov.CombinedSolver">
+<span id="pygaussmarkov-combinedsolver-module"></span><h2>pygaussmarkov.CombinedSolver module<a class="headerlink" href="#module-pygaussmarkov.CombinedSolver" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: john</p>
+<dl class="class">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver">
+<em class="property">class </em><code class="descclassname">pygaussmarkov.CombinedSolver.</code><code class="descname">CombinedSolver</code><span class="sig-paren">(</span><em>deltaChiSqToStop=0.01</em>, <em>dampingFactor=1</em>, <em>useDampedGaussNeutonLineSearch=False</em>, <em>recordHistory=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to solve problems of the type f(x,l) = 0. Must be implemented by a user class and the requred abstract functions implemented
+The code is broken down into many small functions which can allow a child class to overload any of the methods to change the 
+performance of different methods.</p>
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.computeATBPinvBTinv">
+<code class="descname">computeATBPinvBTinv</code><span class="sig-paren">(</span><em>AT</em>, <em>BPinvBTinv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.computeATBPinvBTinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.computeATBPinvBTinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes AT*BPinvBTinv
+AT the transpose of the determinante matrix
+BPinvBTinv the weight matrix
+return AT*BPinvBTinv</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.computeXhat">
+<code class="descname">computeXhat</code><span class="sig-paren">(</span><em>ATBPinvBTinvAinv</em>, <em>ATBPinvBTinv</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.computeXhat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.computeXhat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATBPinvBTinvAinv * ATBPinvBTinv
+ATBPinvBTinvAinv = the inverse of the design matrix
+ATBPinvBTinv = the transpose of the determinant matrix multiplied by the weight matrix
+w = the residual vecotr (f(x,l))
+retuns the negetive value of the update vector (ATBPinvBTinvAinv * ATBPinvBTinv).w</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.computerATBPinvBTinvA">
+<code class="descname">computerATBPinvBTinvA</code><span class="sig-paren">(</span><em>ATBPinvBTinv</em>, <em>A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.computerATBPinvBTinvA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.computerATBPinvBTinvA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATBPinvBTinv*A the design matrix
+ATBPinvBTinv the transpose of the determinante matrix multiplied by the weight matrix
+A the determinant matrix
+return ATBPinvBTinv*A the design matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.continueSolver">
+<code class="descname">continueSolver</code><span class="sig-paren">(</span><em>chiSq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.continueSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.continueSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks weather the fitter should continue for another iteration</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.fixParameter">
+<code class="descname">fixParameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.fixParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.fixParameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.freeParameter">
+<code class="descname">freeParameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.freeParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.freeParameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAandATBPinvBTinv">
+<code class="descname">getATBPinvBTinvAandATBPinvBTinv</code><span class="sig-paren">(</span><em>variables</em>, <em>BpinvBTinv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getATBPinvBTinvAandATBPinvBTinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAandATBPinvBTinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATBPinvBTinvA and ATBPinvBTinv by calling sub functions
+variables =  the current variables
+p = the weight matrix
+returns ATBPinvBTinvA and ATBPinvBTinv</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA">
+<code class="descname">getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA</code><span class="sig-paren">(</span><em>variables</em>, <em>BpinvBTinv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATBPinvBTinvAinv, ATBPinvBTinv and ATBPinvBTinvA by calling sub functions
+variables =  the current variables
+p = the weight matrix
+returns ATBPinvBTinvAinv, ATBPinvBTinv and ATBPinvBTinvA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getAandAT">
+<code class="descname">getAandAT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getAandAT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getAandAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Computers the determinant matrix A and its transpose AT
+variables = the current variables
+return two numpy matricies A and AT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getBandBT">
+<code class="descname">getBandBT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getBandBT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getBandBT" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Computers the determinant matrix A and its transpose AT
+variables = the current variables
+return two numpy matricies A and AT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getBpinvBTinv">
+<code class="descname">getBpinvBTinv</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getBpinvBTinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getBpinvBTinv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getChiSq">
+<code class="descname">getChiSq</code><span class="sig-paren">(</span><em>w</em>, <em>BTpinvBinv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getChiSq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getChiSq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes w.p.w
+w = the residual vector, the difference between f(x) and the measurements
+returns value of w.p.w</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getFixedFreeArray">
+<code class="descname">getFixedFreeArray</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getFixedFreeArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getFixedFreeArray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getFreeVariables">
+<code class="descname">getFreeVariables</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getFreeVariables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getFreeVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of np array with only the free variables
+variables = np array of all the variables</p>
+<p>return = np array of the free variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getFxl">
+<code class="descname">getFxl</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getFxl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getFxl" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Gets the values for the given variables.
+variables = the current variables
+return a numpy array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getListOfParameterNames">
+<code class="descname">getListOfParameterNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getListOfParameterNames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getListOfParameterNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of strings.
+There should be one entry per parameter
+The order should be the same as the order in the the A matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getNewVariables">
+<code class="descname">getNewVariables</code><span class="sig-paren">(</span><em>variables</em>, <em>alpha</em>, <em>xHat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getNewVariables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getNewVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the current variables with the update vector xHat and the scale parameter alpha
+The method takes account of the fixed and free variables
+variables = the current variables. This should inclule all the variables either free or fixed
+alpha the scale factor for xHat. this is a scalar value
+xHat the update vector. This should only include the updates for the free parameters
+returns the new variables vector</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfFreeParameters">
+<code class="descname">getNumberOfFreeParameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getNumberOfFreeParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfFreeParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfParameters">
+<code class="descname">getNumberOfParameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getNumberOfParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getNumberOfParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getPinv">
+<code class="descname">getPinv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getPinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getPinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Gets the error matrix ((sig**2)) this is also the inverse of the weight matirx p
+return a single numpy matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getUncertaintyList">
+<code class="descname">getUncertaintyList</code><span class="sig-paren">(</span><em>ATBPinvBTinvAInv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getUncertaintyList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getUncertaintyList" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes the inverse of the design matrix and returns a list of the the uncertainities for the parameters
+ATBPinvBTinvAInv is the inverse of the design matix
+returns a list of length number parmetrs, for the uncertainities for each parmeter. If the parameter is fixed
+then the value will be 0.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.getXHatandATBPinvBTinvA">
+<code class="descname">getXHatandATBPinvBTinvA</code><span class="sig-paren">(</span><em>variables</em>, <em>BpinvBTinv</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.getXHatandATBPinvBTinvA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.getXHatandATBPinvBTinvA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.newVariablesOK">
+<code class="descname">newVariablesOK</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.newVariablesOK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.newVariablesOK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns if the new variables calulated are ok.
+return boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the internal variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.runDampedGaussNewtonLineSearch">
+<code class="descname">runDampedGaussNewtonLineSearch</code><span class="sig-paren">(</span><em>ATBPinvBTinvA</em>, <em>variables</em>, <em>xHat</em>, <em>chi0</em>, <em>BpinvBTinv</em>, <em>fxl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.runDampedGaussNewtonLineSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.runDampedGaussNewtonLineSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>If useDampedGaussNeutonLineSearch is True will run a line search, else return 1
+returns alpha</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.CombinedSolver.CombinedSolver.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/CombinedSolver.html#CombinedSolver.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.CombinedSolver.CombinedSolver.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method solves the model</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov.GaussMarkovUtilities">
+<span id="pygaussmarkov-gaussmarkovutilities-module"></span><h2>pygaussmarkov.GaussMarkovUtilities module<a class="headerlink" href="#module-pygaussmarkov.GaussMarkovUtilities" title="Permalink to this headline">¶</a></h2>
+<p>Contains untility functions which can be used in Gaus Markov implementatinos
+&#64;author: john</p>
+<dl class="function">
+<dt id="pygaussmarkov.GaussMarkovUtilities.generatePMatrix">
+<code class="descclassname">pygaussmarkov.GaussMarkovUtilities.</code><code class="descname">generatePMatrix</code><span class="sig-paren">(</span><em>errors</em>, <em>noMeasurements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/GaussMarkovUtilities.html#generatePMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.GaussMarkovUtilities.generatePMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an error vectror and returns a diagional weight matrix. the weight is 1/error**2
+errors = np list of length equal to noMeasuremetns or 1. If length =1 it will assume that this error is the same for all measurements
+noMeasurements = the number of measurements.</p>
+<p>returns a diagional matrix for weights of size noMeasurements X noMeasurements</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pygaussmarkov.GaussMarkovUtilities.generatePinvMatrix">
+<code class="descclassname">pygaussmarkov.GaussMarkovUtilities.</code><code class="descname">generatePinvMatrix</code><span class="sig-paren">(</span><em>errors</em>, <em>noMeasurements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/GaussMarkovUtilities.html#generatePinvMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.GaussMarkovUtilities.generatePinvMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an error vectror and returns a diagional weight matrix. the weight is 1/error**2
+errors = np list of length equal to noMeasuremetns or 1. If length =1 it will assume that this error is the same for all measurements
+noMeasurements = the number of measurements.</p>
+<p>returns a diagional matrix for weights of size noMeasurements X noMeasurements</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov.ParametricSolver">
+<span id="pygaussmarkov-parametricsolver-module"></span><h2>pygaussmarkov.ParametricSolver module<a class="headerlink" href="#module-pygaussmarkov.ParametricSolver" title="Permalink to this headline">¶</a></h2>
+<p>module contains the ParametricSolver object
+&#64;author: john</p>
+<dl class="class">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver">
+<em class="property">class </em><code class="descclassname">pygaussmarkov.ParametricSolver.</code><code class="descname">ParametricSolver</code><span class="sig-paren">(</span><em>deltaChiSqToStop=0.01</em>, <em>dampingFactor=1</em>, <em>useDampedGaussNeutonLineSearch=False</em>, <em>recordHistory=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to solve problems of the type f(x) = L. Must be implemented by a user class and the requred abstract functions implemented
+The code is broken down into many small functions which can allow a child class to overload any of the methods to change the 
+performance of different methods.</p>
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.computeATP">
+<code class="descname">computeATP</code><span class="sig-paren">(</span><em>AT</em>, <em>P</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.computeATP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.computeATP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes AT*P
+AT the transpose of the determinante matrix
+P the weight matrix
+return AT*P</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.computeXhat">
+<code class="descname">computeXhat</code><span class="sig-paren">(</span><em>ATPAinv</em>, <em>ATP</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.computeXhat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.computeXhat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATPAinv * ATP
+ATPAinv = the inverse of the design matrix
+ATP = the transpose of the determinant matrix multiplied by the weight matrix
+w = the residual vecotr (f(x)-measurements)
+retuns the negetive value of the update vector (ATPAinv * ATP).w</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.computerATPA">
+<code class="descname">computerATPA</code><span class="sig-paren">(</span><em>ATP</em>, <em>A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.computerATPA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.computerATPA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATP*P the design matrix
+ATP the transpose of the determinante matrix multiplied by the weight matrix
+A the determinant matrix
+return ATP*A the design matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.continueSolver">
+<code class="descname">continueSolver</code><span class="sig-paren">(</span><em>chiSq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.continueSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.continueSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks weather the fitter should continue for another iteration</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.fixParameter">
+<code class="descname">fixParameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.fixParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.fixParameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.freeParameter">
+<code class="descname">freeParameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.freeParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.freeParameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getATPAandATP">
+<code class="descname">getATPAandATP</code><span class="sig-paren">(</span><em>variables</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getATPAandATP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getATPAandATP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATPA and ATP by calling sub functions
+variables =  the current variables
+p = the weight matrix
+returns ATPA and ATP</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getATPAinvATPandATPA">
+<code class="descname">getATPAinvATPandATPA</code><span class="sig-paren">(</span><em>variables</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getATPAinvATPandATPA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getATPAinvATPandATPA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes ATPAinv, ATP and ATPA by calling sub functions
+variables =  the current variables
+p = the weight matrix
+returns ATPAinv, ATP and ATPA</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getAandAT">
+<code class="descname">getAandAT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getAandAT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getAandAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Computers the determinant matrix A and its transpose AT
+variables = the current variables
+return two numpy matricies A and AT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getChiSq">
+<code class="descname">getChiSq</code><span class="sig-paren">(</span><em>w</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getChiSq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getChiSq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes w.p.w
+w = the residual vector, the difference between f(x) and the measurements
+returns value of w.p.w</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getFixedFreeArray">
+<code class="descname">getFixedFreeArray</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getFixedFreeArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getFixedFreeArray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getFreeVariables">
+<code class="descname">getFreeVariables</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getFreeVariables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getFreeVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of np array with only the free variables
+variables = np array of all the variables</p>
+<p>return = np array of the free variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getFx">
+<code class="descname">getFx</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getFx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getFx" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Gets the values for the given variables.
+variables = the current variables
+return a numpy array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getListOfParameterNames">
+<code class="descname">getListOfParameterNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getListOfParameterNames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getListOfParameterNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of strings.
+There should be one entry per parameter
+The order should be the same as the order in the the A matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getMeasurements">
+<code class="descname">getMeasurements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getMeasurements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getMeasurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Gets the measurements 
+returns a numpy array</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getNewVariables">
+<code class="descname">getNewVariables</code><span class="sig-paren">(</span><em>variables</em>, <em>alpha</em>, <em>xHat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getNewVariables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getNewVariables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the current variables with the update vector xHat and the scale parameter alpha
+The method takes account of the fixed and free variables
+variables = the current variables. This should inclule all the variables either free or fixed
+alpha the scale factor for xHat. this is a scalar value
+xHat the update vector. This should only include the updates for the free parameters
+returns the new variables vector</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfFreeParameters">
+<code class="descname">getNumberOfFreeParameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getNumberOfFreeParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfFreeParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfParameters">
+<code class="descname">getNumberOfParameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getNumberOfParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getNumberOfParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getP">
+<code class="descname">getP</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getP" title="Permalink to this definition">¶</a></dt>
+<dd><p>User implemented method. Gets the weight matrix (1/(sig**2))
+return a single numpy matrix</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getUncertaintyList">
+<code class="descname">getUncertaintyList</code><span class="sig-paren">(</span><em>ATPAInv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getUncertaintyList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getUncertaintyList" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes the inverse of the design matrix and returns a list of the the uncertainities for the parameters
+ATPAInv is the inverse of the design matix
+returns a list of length number parmetrs, for the uncertainities for each parmeter. If the parameter is fixed
+then the value will be 0.0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getW">
+<code class="descname">getW</code><span class="sig-paren">(</span><em>measurements</em>, <em>fx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getW"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getW" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes f(x) - measurements
+measurements = the measurements
+fx = the calcualted values
+returns fx-measurements</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.getXHatandATPA">
+<code class="descname">getXHatandATPA</code><span class="sig-paren">(</span><em>variables</em>, <em>p</em>, <em>w</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.getXHatandATPA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.getXHatandATPA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes xHat by calling subfunctions.
+variables =  the current variables
+p = the weight matrix
+w = the residual vecotr (f(x)-measurements)
+returns -xHat(subtract from current x to get new x), ATPAInv</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.newVariablesOK">
+<code class="descname">newVariablesOK</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.newVariablesOK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.newVariablesOK" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns if the new variables calulated are ok.
+return boolean</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the internal variables</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.runDampedGaussNewtonLineSearch">
+<code class="descname">runDampedGaussNewtonLineSearch</code><span class="sig-paren">(</span><em>ATPA</em>, <em>variables</em>, <em>xHat</em>, <em>chi0</em>, <em>p</em>, <em>l</em>, <em>fx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.runDampedGaussNewtonLineSearch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.runDampedGaussNewtonLineSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>If useDampedGaussNeutonLineSearch is True will run a line search, else return 1
+returns alpha</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.ParametricSolver.ParametricSolver.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/ParametricSolver.html#ParametricSolver.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.ParametricSolver.ParametricSolver.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method solves the model</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov.TriangulationSolver">
+<span id="pygaussmarkov-triangulationsolver-module"></span><h2>pygaussmarkov.TriangulationSolver module<a class="headerlink" href="#module-pygaussmarkov.TriangulationSolver" title="Permalink to this headline">¶</a></h2>
+<p>module contains the TriangulationSover object wihch can sovle triangulatin problems
+&#64;author: john</p>
+<dl class="class">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver">
+<em class="property">class </em><code class="descclassname">pygaussmarkov.TriangulationSolver.</code><code class="descname">TriangulationSolver</code><span class="sig-paren">(</span><em>xPos</em>, <em>yPos</em>, <em>zPos</em>, <em>measurements</em>, <em>uncertainties</em>, <em>deltaChiSqToStop=0.01</em>, <em>dampingFactor=1</em>, <em>useDampedGaussNeutonLineSearch=False</em>, <em>recordHistory=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygaussmarkov.ParametricSolver.ParametricSolver" title="pygaussmarkov.ParametricSolver.ParametricSolver"><code class="xref py py-class docutils literal"><span class="pre">pygaussmarkov.ParametricSolver.ParametricSolver</span></code></a></p>
+<p>triangulation with parametric solver</p>
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.getAandAT">
+<code class="descname">getAandAT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.getAandAT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.getAandAT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.getFx">
+<code class="descname">getFx</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.getFx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.getFx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.getListOfParameterNames">
+<code class="descname">getListOfParameterNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.getListOfParameterNames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.getListOfParameterNames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.getMeasurements">
+<code class="descname">getMeasurements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.getMeasurements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.getMeasurements" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.getP">
+<code class="descname">getP</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.getP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.getP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.x_parName">
+<code class="descname">x_parName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.x_parName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.x_parName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.y_parName">
+<code class="descname">y_parName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.y_parName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.y_parName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.TriangulationSolver.TriangulationSolver.z_parName">
+<code class="descname">z_parName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#TriangulationSolver.z_parName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.TriangulationSolver.z_parName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pygaussmarkov.TriangulationSolver.main">
+<code class="descclassname">pygaussmarkov.TriangulationSolver.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/TriangulationSolver.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.TriangulationSolver.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov.nthOrderFitParametricSolver">
+<span id="pygaussmarkov-nthorderfitparametricsolver-module"></span><h2>pygaussmarkov.nthOrderFitParametricSolver module<a class="headerlink" href="#module-pygaussmarkov.nthOrderFitParametricSolver" title="Permalink to this headline">¶</a></h2>
+<p>&#64;author: john</p>
+<dl class="class">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit">
+<em class="property">class </em><code class="descclassname">pygaussmarkov.nthOrderFitParametricSolver.</code><code class="descname">NthOrderFit</code><span class="sig-paren">(</span><em>order</em>, <em>xData</em>, <em>yData</em>, <em>uncertainties</em>, <em>deltaChiSqToStop=0.01</em>, <em>dampingFactor=1</em>, <em>useDampedGaussNeutonLineSearch=False</em>, <em>recordHistory=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pygaussmarkov.ParametricSolver.ParametricSolver" title="pygaussmarkov.ParametricSolver.ParametricSolver"><code class="xref py py-class docutils literal"><span class="pre">pygaussmarkov.ParametricSolver.ParametricSolver</span></code></a></p>
+<p>Nth Order Fitter</p>
+<dl class="method">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getAandAT">
+<code class="descname">getAandAT</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit.getAandAT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getAandAT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getFx">
+<code class="descname">getFx</code><span class="sig-paren">(</span><em>variables</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit.getFx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getFx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getListOfParameterNames">
+<code class="descname">getListOfParameterNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit.getListOfParameterNames"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getListOfParameterNames" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getMeasurements">
+<code class="descname">getMeasurements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit.getMeasurements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getMeasurements" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getP">
+<code class="descname">getP</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#NthOrderFit.getP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.NthOrderFit.getP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pygaussmarkov.nthOrderFitParametricSolver.main">
+<code class="descclassname">pygaussmarkov.nthOrderFitParametricSolver.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pygaussmarkov/nthOrderFitParametricSolver.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pygaussmarkov.nthOrderFitParametricSolver.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-pygaussmarkov">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pygaussmarkov" title="Permalink to this headline">¶</a></h2>
+<p>Created on Fri Aug  5 15:18:00 2016</p>
+<p>&#64;author: john</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pygaussmarkov</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dr John Dale.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/pygaussmarkov.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

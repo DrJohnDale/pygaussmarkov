@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class TriangulationSolver(ParametricSolver):
-    """ Simple y=mx+c fitting """
+    """ triangulation with parametric solver """
     def __init__(self, xPos, yPos, zPos,measurements, uncertainties,deltaChiSqToStop = 0.01,dampingFactor = 1,useDampedGaussNeutonLineSearch = False, recordHistory = False):
         """
         xPos = the x positions
