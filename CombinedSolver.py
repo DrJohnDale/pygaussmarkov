@@ -12,6 +12,9 @@ class CombinedSolver:
     Class to solve problems of the type f(x,l) = 0. Must be implemented by a user class and the requred abstract functions implemented
     The code is broken down into many small functions which can allow a child class to overload any of the methods to change the 
     performance of different methods.
+    
+    The variables printChiSqEachIteration,printChiSqDiffEachIteration,printParametersEachIteration and printParametersEachIteration can be used to 
+    show logging to help with debugging. They are all defaulted to false
     """
     
     def __init__(self,deltaChiSqToStop=0.01,dampingFactor = 1,useDampedGaussNeutonLineSearch = False, recordHistory = False):
@@ -91,10 +94,7 @@ class CombinedSolver:
         return out
 
     def getFixedFreeArray(self):
-        out = list()
-        for n in self.getListOfParameterNames():
-            out.append(self.fixed[n])
-        return out
+        return [self.fixed[n] for n in self.getListOfParameterNames()]
     
     def getNumberOfParameters(self):
         return len(self.fixed)
