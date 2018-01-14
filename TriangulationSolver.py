@@ -88,7 +88,9 @@ def main():
     print(distances)
     uncert = np.array([noiseWidth])
 
-    fitter = TriangulationSolver(xPos,yPos,zPos,distances,uncert,dampingFactor=0.11,recordHistory = True)
+    fitter = TriangulationSolver(xPos,yPos,zPos,distances,uncert,dampingFactor=0.11,recordHistory = True,useDampedGaussNeutonLineSearch = False)
+    
+    #fitter.fixParameter(fitter.z_parName())
     
     # perform eigen value decomposion to study design
     p = fitter.getP() 
