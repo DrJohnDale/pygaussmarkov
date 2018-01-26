@@ -21,6 +21,7 @@ The two sovers also have a damped gauss newton line search implemented which can
 The dampingFactor variable can be used to scale the step size between iterations. This is defaulted to 1.
 The variables printChiSqEachIteration,printChiSqDiffEachIteration,printParametersEachIteration and printParametersEachIteration can be used to show logging to help with debugging. They are all defaulted to false
 The variable recordHistory can be used to recored the results of each iteration (when set to true). The history variable holds the history.
+A free network constraint solver for the parametric method has been implemented. See ParametricFreeNetworkConstraintSolver.py and the NetworkSolver.py for an example of its implementation
 
 Functions to implement in user object:
 To implement a parametric solver the following methods need to be implemented.
@@ -95,5 +96,4 @@ nthOrderFitParametricSolver.py (parametric)
 
 Planned features:
 Analyitical sover: To display the full equations to allow analysis of weaknesses in the model
-Inner Constraint: To allow self constraining models
 Kalman Filter

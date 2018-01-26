@@ -23,7 +23,7 @@ class NthOrderFit(ParametricSolver):
         useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False
         """
         self.order = order        
-        super(NthOrderFit, self).__init__(deltaChiSqToStop = deltaChiSqToStop,dampingFactor = dampingFactor,useDampedGaussNeutonLineSearch = useDampedGaussNeutonLineSearch,recordHistory=recordHistory)
+        super().__init__(deltaChiSqToStop = deltaChiSqToStop,dampingFactor = dampingFactor,useDampedGaussNeutonLineSearch = useDampedGaussNeutonLineSearch,recordHistory=recordHistory)
         self.xData = xData
         self.yData = yData
         self.uncert = uncertainties

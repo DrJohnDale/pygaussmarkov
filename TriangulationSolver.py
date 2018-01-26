@@ -23,7 +23,7 @@ class TriangulationSolver(ParametricSolver):
         dampingFactor = constant to chagne convergence speed. Default 1
         useDampedGaussNeutonLineSearch  weather to use the damped gauss neuton method. default = False
         """
-        super(TriangulationSolver, self).__init__(deltaChiSqToStop = deltaChiSqToStop,dampingFactor = dampingFactor,useDampedGaussNeutonLineSearch = useDampedGaussNeutonLineSearch,recordHistory=recordHistory)
+        super().__init__(deltaChiSqToStop = deltaChiSqToStop,dampingFactor = dampingFactor,useDampedGaussNeutonLineSearch = useDampedGaussNeutonLineSearch,recordHistory=recordHistory)
         self.xPos = xPos
         self.yPos = yPos
         self.zPos = zPos
