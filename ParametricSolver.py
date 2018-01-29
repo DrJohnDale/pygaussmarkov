@@ -319,8 +319,8 @@ class ParametricSolver:
             
             xHat, ATPA = self.getXHatandATPA(variables,p,w)
             alpha = self.runDampedGaussNewtonLineSearch(ATPA,variables.copy(),xHat,chiSq*len(w),p,l,fx)
-            variables = self.getNewVariables(variables,alpha,xHat)
             previousVariables = variables.copy()
+            variables = self.getNewVariables(variables,alpha,xHat)
             fx = self.getFx(variables)
             w = self.getW(l,fx)
             chiSq = self.getChiSq(w,p)

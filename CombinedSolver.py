@@ -309,8 +309,8 @@ class CombinedSolver:
             
             alpha = self.runDampedGaussNewtonLineSearch(ATBPinvBTinvA,variables.copy(),xHat,chiSq*len(w),BpinvBTinv,fxl)
             
-            variables = self.getNewVariables(variables,alpha,xHat)
             previousVariables = variables.copy()
+            variables = self.getNewVariables(variables,alpha,xHat)
             fxl = self.getFxl(variables)
             w = fxl
             
