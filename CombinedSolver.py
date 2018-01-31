@@ -292,6 +292,7 @@ class CombinedSolver:
         Method solves the model
         """
         self.reset()
+        self.lastVars = variables.copy()
         variables = variables.copy()
         fxl = self.getFxl(variables)
         w = fxl
@@ -311,6 +312,7 @@ class CombinedSolver:
             
             previousVariables = variables.copy()
             variables = self.getNewVariables(variables,alpha,xHat)
+            self.lastVars = variables.copy()
             fxl = self.getFxl(variables)
             w = fxl
             

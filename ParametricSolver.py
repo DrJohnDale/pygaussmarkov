@@ -302,6 +302,7 @@ class ParametricSolver:
         Method solves the model
         """
         self.reset()
+        self.lastVars = variables.copy()
         variables = variables.copy()
         fx = self.getFx(variables)
         l = self.getMeasurements()
@@ -321,7 +322,9 @@ class ParametricSolver:
             alpha = self.runDampedGaussNewtonLineSearch(ATPA,variables.copy(),xHat,chiSq*len(w),p,l,fx)
             previousVariables = variables.copy()
             variables = self.getNewVariables(variables,alpha,xHat)
+            self.lastVars = variables.copy()
             fx = self.getFx(variables)
+            l = self.getMeasurements()
             w = self.getW(l,fx)
             chiSq = self.getChiSq(w,p)
             if self.printChiSqEachIteration:
