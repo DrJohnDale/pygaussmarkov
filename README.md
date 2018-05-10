@@ -2,7 +2,7 @@ The PyGaussMarkov package is package to apply non-linear least squares using the
 
 The user only needs to add code to produce the function (F(X)) and its first derivates (dF(X)/dX and/or dF(X,L)/dL) to allow the solvers to fit their data.
 
-Introduction:
+# Introduction:
 
 These models are used extensively in metroloy (e.g. the alignment of particle accelerators) and photogrammetry. In photogrammetry the term bundle adjustment is often used.
 The models are applicable for problems where analyitical equations for the problem at hand can be written, along with the first dirivate with respect to the variables which need to be determined.
@@ -15,7 +15,7 @@ The combined solver can be used in the case when you have a vectro of functions 
 
 To implement a solver the user must wirite there own class which extends either of the generic solvers and implements the required abstract methods.
 
-Features:
+# Features:
 Both the combined and the parametric solvers can have parameters fixed or freed using the fixParameter(paramName) and freeParameter(paramName) functions of the object. 
 The two sovers also have a damped gauss newton line search implemented which can be activated or deactivated by setting the objects useDampedGaussNeutonLineSearch to true or false.
 The dampingFactor variable can be used to scale the step size between iterations. This is defaulted to 1.
@@ -54,7 +54,7 @@ If a model cannot calculate the required inverse then the following code snippet
     
 An example of this is in the triangulationSolver.py in the main() funciton at the bottom of the file.
 
-Example:
+# Example:
 Here we will go thorough the TriangulationSolver.py as an example of how to implement a solver.
 In triangulation we measure the distance between our position and multipule other known positions. The distance measured is represented by the following equation:
 d_i = sqrt((x_i-x)^2 + (y_i-y)^2 + (z_i-z)^2)
@@ -89,11 +89,11 @@ The required debug variables should then be set
 The solver is run passing the initial starting variables. The code snippet is: out, err = fitter.solve(startVar). Where out holds the determined x,y,z values and error holds the unertainties on the determined x,y,z values.
 The example has the history turned on and so it then plots the path the solver took to find the solution.
 
-Implemented solvers:
+# Implemented solvers:
 TriangulationSolver.py (parametric)
 CircleSolver.py (combined)
 nthOrderFitParametricSolver.py (parametric)
 
-Planned features:
+# Planned features:
 Analyitical sover: To display the full equations to allow analysis of weaknesses in the model
 Kalman Filter
