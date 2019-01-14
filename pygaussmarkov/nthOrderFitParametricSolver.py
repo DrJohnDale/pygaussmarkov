@@ -59,7 +59,7 @@ class NthOrderFit(ParametricSolver):
         return self.yData
                 
                 
-def main():
+def run_example():
     xData = np.array(range(300))
     mTrue = 2.0
     cTrue = 0.0
@@ -84,4 +84,4 @@ def main():
     plt.plot(xData,fitter.getFx(out),'-k')
 
 if __name__ == '__main__':
-    main()
+    run_example()

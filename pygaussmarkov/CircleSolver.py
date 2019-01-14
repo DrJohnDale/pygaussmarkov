@@ -133,7 +133,7 @@ class CircleSolver(CombinedSolver):
         yc = yMin+r
         return np.array([xc,yc,r])
         
-def main():
+def run_example():
     xc = 5
     yc = 5
     r = 5
@@ -179,4 +179,4 @@ def main():
     return        
 
 if __name__ == '__main__':
-    main()
+    run_example()

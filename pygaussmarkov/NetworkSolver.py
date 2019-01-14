@@ -102,7 +102,7 @@ class NetworkSolver(ParametricFreeNetworkConstraintSolver):
         print("fixing/freeing parameters disabled, nothing has changed")
     
     
-def main():
+def run_example():
     # define true tracker positions
     trackerPositions = [0,0,0, 0,0,1,  0,0.5,0.5, 0.5,0,0.5]
     noTrackingPositions = math.floor(len(trackerPositions)/3)
@@ -151,4 +151,4 @@ def main():
     
     
 if __name__ == '__main__':
-    main()
+    run_example()
