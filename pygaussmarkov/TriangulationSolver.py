@@ -75,7 +75,7 @@ class TriangulationSolver(ParametricSolver):
         return self.measurements
                 
                 
-def main():
+def run_example():
     xPos = np.array([0.0,1.0,2.0,-1.0,-2.0])
     yPos = np.array([0.0,1.0,0.0,1.0,0.0])
     zPos = np.array([0.0,1.0,0.0,0.0,-2.0])
@@ -123,4 +123,4 @@ def main():
     figManager.window.showMaximized()
 
 if __name__ == '__main__':
-    main()
+    run_example()
