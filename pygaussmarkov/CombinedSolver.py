@@ -300,6 +300,7 @@ class CombinedSolver:
         chiSq = self.getChiSq(w,BpinvBTinv)
         first = True
         previousVariables = variables.copy()
+        previousChiSq = chiSq
         if self.recordHistory:
             self.history.append(variables.copy())
         while(self.continueSolver(chiSq) or first):
@@ -311,6 +312,7 @@ class CombinedSolver:
             alpha = self.runDampedGaussNewtonLineSearch(ATBPinvBTinvA,variables.copy(),xHat,chiSq*len(w),BpinvBTinv,fxl)
             
             previousVariables = variables.copy()
+            previousChiSq = chiSq
             variables = self.getNewVariables(variables,alpha,xHat)
             self.lastVars = variables.copy()
             fxl = self.getFxl(variables)
@@ -327,7 +329,8 @@ class CombinedSolver:
                 self.history.append(variables.copy())
         if not self.newVariablesOK():
             print("Using previous variables")
-            variables= previousVariables
+            variables = previousVariables
+            chiSq = previousChiSq
         
         #compute the final uncertainties
         ATBPinvBTinvAinv, ATBPinvBTinv, ATBPinvBTinvA = self.getATBPinvBTinvAinvandATBPinvBTinvandATBPinvBTinvA(variables,BpinvBTinv)

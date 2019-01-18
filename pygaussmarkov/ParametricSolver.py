@@ -311,6 +311,7 @@ class ParametricSolver:
         chiSq = self.getChiSq(w,p)
         first = True
         previousVariables = variables.copy()
+        previousChiSq = chiSq
         if self.recordHistory:
             self.history.append(variables.copy())
         
@@ -321,6 +322,7 @@ class ParametricSolver:
             xHat, ATPA = self.getXHatandATPA(variables,p,w)
             alpha = self.runDampedGaussNewtonLineSearch(ATPA,variables.copy(),xHat,chiSq*len(w),p,l,fx)
             previousVariables = variables.copy()
+            previousChiSq = chiSq
             variables = self.getNewVariables(variables,alpha,xHat)
             self.lastVars = variables.copy()
             fx = self.getFx(variables)
@@ -336,7 +338,8 @@ class ParametricSolver:
             
         if not self.newVariablesOK():
             print("Using previous variables")
-            variables= previousVariables
+            variables = previousVariables
+            chiSq = previousChiSq
         
         #compute the final uncertainties
         ATPAInv, ATP, ATPA = self.getATPAinvATPandATPA(variables,p)
