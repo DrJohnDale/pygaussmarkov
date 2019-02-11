@@ -30,6 +30,7 @@ class ParametricSolver:
         self.printChiSqEachIteration = False
         self.printChiSqDiffEachIteration = False
         self.printParametersEachIteration = False
+        self.printUsingPreviousWaring = False
         self.recordHistory = recordHistory
         
         self.fixed = dict()
@@ -337,7 +338,8 @@ class ParametricSolver:
                 self.history.append(variables.copy())
             
         if not self.newVariablesOK():
-            print("Using previous variables")
+            if  self.printUsingPreviousWaring:
+                print("Using previous variables")
             variables = previousVariables
             chiSq = previousChiSq
         
